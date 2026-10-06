@@ -1,0 +1,51 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <AssemblyName>BAMP.HostBizManFix</AssemblyName>
+    <LangVersion>latest</LangVersion>
+    <GameManaged Condition="'$(GameManaged)' == ''">C:\Program Files (x86)\Steam\steamapps\common\Big Ambitions\Big Ambitions_Data\Managed</GameManaged>
+    <OriginalMod Condition="'$(OriginalMod)' == ''">$(MSBuildThisFileDirectory)original</OriginalMod>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <AssemblySearchPaths>{HintPathFromItem};{TargetFrameworkDirectory};{RawFileName}</AssemblySearchPaths>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="HostBizManFix.cs" />
+    <Compile Include="CartTrunkFix.cs" />
+    <Compile Include="SafetyCore.cs" />
+    <Compile Include="SafetyFix.cs" />
+    <Compile Include="WireFix.cs" />
+    <Compile Include="MergerFix.cs" />
+    <Compile Include="MemoryFix.cs" />
+    <Compile Include="BusinessSafetyFix.cs" />
+    <Compile Include="MovementFix.cs" />
+    <Compile Include="SaveSafetyFix.cs" />
+    <Compile Include="MoneyDeliveryFix.cs" />
+    <Compile Include="JournalCache.cs" />
+    <Compile Include="StorageRecoveryFix.cs" />
+    <Compile Include="LoanPeriodFix.cs" />
+    <Compile Include="MergerOutbox.cs" />
+    <Compile Include="WorldStreamFix.cs" />
+    <Compile Include="RentRecoveryFix.cs" />
+    <Compile Include="StorageOwnerRollback.cs" />
+    <Compile Include="HubInputFix.cs" />
+    <Compile Include="CheckedPersistence.cs" />
+    <Compile Include="MonitorLease.cs" />
+    <Compile Include="PayloadReader.cs" />
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
+    <Reference Include="BigAmbitionsMP"><HintPath>$(OriginalMod)\BigAmbitionsMP.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="0Harmony"><HintPath>$(OriginalMod)\Dependencies\0Harmony.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="Newtonsoft.Json"><HintPath>$(GameManaged)\Newtonsoft.Json.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="GameAssembly" HintPath="$(GameManaged)\BigAmbitions.dll" Private="false" />
+    <Reference Include="HGPlugins" HintPath="$(GameManaged)\HGPlugins.dll" Private="false" />
+    <Reference Include="HGExtensions" HintPath="$(GameManaged)\HGExtensions.dll" Private="false" />
+    <Reference Include="ExternalPlugins" HintPath="$(GameManaged)\ExternalPlugins.dll" Private="false" />
+    <Reference Include="UnityEngine.CoreModule" HintPath="$(GameManaged)\UnityEngine.CoreModule.dll" Private="false" />
+    <Reference Include="UnityEngine.UI" HintPath="$(GameManaged)\UnityEngine.UI.dll" Private="false" />
+    <Reference Include="Unity.TextMeshPro" HintPath="$(GameManaged)\Unity.TextMeshPro.dll" Private="false" />
+    <Reference Include="BigAmbitions.ModAPI" HintPath="$(GameManaged)\BigAmbitions.ModAPI.dll" Private="false" />
+    <Reference Include="BigAmbitions.Items" HintPath="$(GameManaged)\BigAmbitions.Items.dll" Private="false" />
+    <Reference Include="BigAmbitions.Characters" HintPath="$(GameManaged)\BigAmbitions.Characters.dll" Private="false" />
+    <Reference Include="UnityEngine.TextRenderingModule" HintPath="$(GameManaged)\UnityEngine.TextRenderingModule.dll" Private="false" />
+    <Reference Include="UnityEngine.UIModule" HintPath="$(GameManaged)\UnityEngine.UIModule.dll" Private="false" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,27 @@
+using System.Reflection;
+using BAMP.CartTrunkFix;
+using BigAmbitionsMP;
+using Helpers;
+using UnityEngine.UI;
+void Check(bool b,string n){if(!b)throw new Exception(n);Console.WriteLine("PASS: "+n);}
+object Run(Type t,string name,params object[] args)=>t.GetMethod(name,BindingFlags.Static|BindingFlags.NonPublic)!.Invoke(null,args);
+VehicleHelper.Current=new(){VehicleType=new(){spawnInPlayerObject=true,maxCargoCapacity=4},cargoInstances=new(){new object()}};
+Check(!(bool)Run(typeof(CartClick),"Prefix","car-a")&&VehicleStoragePanel.Opens==1,"loaded cart opens friend's trunk");
+VehicleHelper.Current.cargoInstances.Clear();
+Check(!(bool)Run(typeof(CartClick),"Prefix","car-a"),"empty cart can open trunk even without cached target cargo");
+VehicleHelper.Current.cargoInstances.Add(new object());
+var button=new Button();var label=new TMPro.TMP_Text();button.children.Add(label);VehicleStoragePanel._cargoSellAll=button;
+Run(typeof(CartNativeDeposit),"Postfix");
+Check(button.gameObject.active&&label.text=="Deposit cart"&&button.onClick.listeners.Count==1,"native cargo UI exposes one cart deposit action");
+VehicleStoragePanel._vid="car-b";button.onClick.Invoke();
+Check(PassengerRide.DepositVid=="car-a","deposit captures original target despite later UI changes");
+VehicleHelper.Current.cargoInstances.Clear();button.onClick.Invoke();
+Check(PassengerRide.Deposits==1,"stale deposit button does not submit emptied cart");
+VehicleHelper.Current.cargoInstances.Add(new object());Run(typeof(CartFallbackDeposit),"Postfix");VehicleStoragePanel.Fallback();
+Check(VehicleStoragePanel.Rows==1&&PassengerRide.DepositVid=="car-b","fallback UI uses existing walk-and-deposit route");
+VehicleManager.Service=true;Check((bool)Run(typeof(CartClick),"Prefix","taxi"),"service vehicle keeps original route");VehicleManager.Service=false;
+VehicleHelper.Current.VehicleType.spawnInPlayerObject=false;Check((bool)Run(typeof(CartClick),"Prefix","car-a"),"driving normal car keeps original route");
+VehicleHelper.Current.VehicleType.spawnInPlayerObject=true;MPServer.IsRunning=false;MPClient.IsConnected=false;
+Check((bool)Run(typeof(CartClick),"Prefix","car-a"),"offline click keeps original route");
+MPClient.IsConnected=true;VehicleManager.Owner="";Check((bool)Run(typeof(CartClick),"Prefix","missing"),"unknown owner is not fabricated");
+Console.WriteLine("10 managed regression checks passed. Unity and two-player runtime verification remains separate.");

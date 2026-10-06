@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><TargetFramework>net9.0</TargetFramework><OutputType>Exe</OutputType><ImplicitUsings>enable</ImplicitUsings><NoWarn>CS0649</NoWarn></PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\SafetyCore.cs" Link="SafetyCore.cs" />
+    <Compile Include="..\WireFix.cs" Link="WireFix.cs" />
+    <Compile Include="..\MoneyDeliveryFix.cs" Link="MoneyDeliveryFix.cs" />
+    <Compile Include="..\JournalCache.cs" Link="JournalCache.cs" />
+    <Compile Include="..\StorageRecoveryFix.cs" Link="StorageRecoveryFix.cs" />
+    <Compile Include="..\LoanPeriodFix.cs" Link="LoanPeriodFix.cs" />
+    <Compile Include="..\MergerOutbox.cs" Link="MergerOutbox.cs" />
+    <Compile Include="..\WorldStreamFix.cs" Link="WorldStreamFix.cs" />
+    <Compile Include="..\RentRecoveryFix.cs" Link="RentRecoveryFix.cs" />
+    <Compile Include="..\StorageOwnerRollback.cs" Link="StorageOwnerRollback.cs" />
+    <Compile Include="..\HubInputFix.cs" Link="HubInputFix.cs" />
+    <Compile Include="..\CheckedPersistence.cs" Link="CheckedPersistence.cs" />
+    <Compile Include="..\MonitorLease.cs" Link="MonitorLease.cs" />
+    <Compile Include="..\MemoryFix.cs" Link="MemoryFix.cs" />
+    <Compile Include="..\PayloadReader.cs" Link="PayloadReader.cs" />
+
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  </ItemGroup>
+</Project>
