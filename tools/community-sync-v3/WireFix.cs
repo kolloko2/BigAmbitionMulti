@@ -18,6 +18,10 @@ namespace BAMP.SyncFix
     }
     public static class Wire
     {
+        public static string CurrentWorld => MPServer.IsRunning
+            ? (!string.IsNullOrEmpty(MPSaveCoordinator.ActivePlaythroughId)
+                ? MPSaveCoordinator.ActivePlaythroughId : MPSaveManager.ActivePlaythrough ?? "")
+            : MPSaveManager.ActivePlaythrough ?? "";
         public static string Epoch = Guid.NewGuid().ToString("N");
         private static long sequence;
         private static readonly StreamGate Streams = new StreamGate();
@@ -48,7 +52,7 @@ namespace BAMP.SyncFix
         {
             string group = MergerSync.MyGroupId;
             return new WireStamp { Id = Guid.NewGuid().ToString("N"), Epoch = Epoch,
-                World = MPSaveCoordinator.ActivePlaythroughId ?? "", Origin = MPConfig.PlayerId,
+                World = Wire.CurrentWorld, Origin = MPConfig.PlayerId,
                 Group = group, Members = Members(group), Sequence = Interlocked.Increment(ref sequence) };
         }
         public static WireStamp Ensure(object payload)
@@ -78,7 +82,7 @@ namespace BAMP.SyncFix
         }
         public static bool InWorld(WireStamp stamp)
         {
-            var world = MPSaveCoordinator.ActivePlaythroughId ?? "";
+            var world = Wire.CurrentWorld;
             return stamp != null && !string.IsNullOrEmpty(stamp.Id) && (world == "" || stamp.World == world);
         }
         public static bool Fresh(object payload, string channel)
@@ -177,14 +181,14 @@ namespace BAMP.SyncFix
             if (action == null) return;
             var old = action; var save = SaveGameManager.Current;
             var merger=MergerOutbox.Current;
-            string world = MPSaveCoordinator.ActivePlaythroughId ?? "", epoch = Wire.Epoch;
+            string world = Wire.CurrentWorld, epoch = Wire.Epoch;
             if (key == null && old.Target != null)
                 foreach (var field in old.Target.GetType().GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic))
                     if (field.FieldType == typeof(PlayerPositionPayload) && field.GetValue(old.Target) is PlayerPositionPayload position)
                     { key = "syncfix-player|" + position.PlayerId; break; }
             action = () => {
                 if ((merger!=null&&merger.Canceled)||epoch != Wire.Epoch || (save != null && !ReferenceEquals(save, SaveGameManager.Current)) ||
-                    (world.Length > 0 && world != (MPSaveCoordinator.ActivePlaythroughId ?? ""))) return;
+                    (world.Length > 0 && world != (Wire.CurrentWorld))) return;
                 old();
             };
         }

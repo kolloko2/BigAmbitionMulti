@@ -31,6 +31,8 @@
     <Compile Include="CheckedPersistence.cs" />
     <Compile Include="MonitorLease.cs" />
     <Compile Include="PayloadReader.cs" />
+    <Compile Include="LocalMusicFix.cs" />
+    <Compile Include="MusicTransferFix.cs" />
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
     <Reference Include="BigAmbitionsMP"><HintPath>$(OriginalMod)\BigAmbitionsMP.dll</HintPath><Private>false</Private></Reference>
     <Reference Include="0Harmony"><HintPath>$(OriginalMod)\Dependencies\0Harmony.dll</HintPath><Private>false</Private></Reference>
@@ -40,6 +42,7 @@
     <Reference Include="HGExtensions" HintPath="$(GameManaged)\HGExtensions.dll" Private="false" />
     <Reference Include="ExternalPlugins" HintPath="$(GameManaged)\ExternalPlugins.dll" Private="false" />
     <Reference Include="UnityEngine.CoreModule" HintPath="$(GameManaged)\UnityEngine.CoreModule.dll" Private="false" />
+    <Reference Include="UnityEngine.AudioModule" HintPath="$(GameManaged)\UnityEngine.AudioModule.dll" Private="false" />
     <Reference Include="UnityEngine.UI" HintPath="$(GameManaged)\UnityEngine.UI.dll" Private="false" />
     <Reference Include="Unity.TextMeshPro" HintPath="$(GameManaged)\Unity.TextMeshPro.dll" Private="false" />
     <Reference Include="BigAmbitions.ModAPI" HintPath="$(GameManaged)\BigAmbitions.ModAPI.dll" Private="false" />

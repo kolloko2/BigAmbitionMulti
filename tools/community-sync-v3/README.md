@@ -14,3 +14,11 @@
 - Added limits for decoding, fragments, queues and JSON payloads.
 - Added atomic mod-file writes and interrupted save/metadata recovery.
 - Optimized the deduplication journal with sharding and cached indexes.
+- Fixed lobby fragment reassembly, including duplicate and out-of-order fragments.
+- Fixed client world identification so valid player movement, storage and owner interior updates are accepted by the host.
+- Fixed independent work commands being discarded as stale snapshots and restored delivery of merger plan refusal responses.
+- Fixed merger rollback restoration of replaced dictionaries, permission collections and foreign group caches.
+- Fixed shared LocalFiles radio selection being reset when another player has no playable local tracks.
+- Added automatic transfer of the host's current local radio track to clients using LocalFiles inside a building, with paced 32 KiB chunks, SHA-256 verification and a separate cache.
+- Preserved clients' original music files and local playlist; added a 16 MiB track limit and a 256 MiB shared audio cache limit.
+- Updated the network protocol to 131; the host and clients use the same updated DLL.

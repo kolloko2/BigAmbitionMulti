@@ -101,6 +101,7 @@ namespace BAMP.SyncFix
         {
             public readonly List<Tuple<string,string,object,string>> Fields = new List<Tuple<string,string,object,string>>();
             public readonly List<Tuple<FieldInfo,object>> Scalars = new List<Tuple<FieldInfo,object>>();
+            public readonly List<Tuple<FieldInfo,object>> Collections = new List<Tuple<FieldInfo,object>>();
             public GameInstance Save; public float Money; public Dictionary<string,string> ModData;
             public FieldInfo ManifestField;public object Manifest;
         }
@@ -119,6 +120,11 @@ namespace BAMP.SyncFix
                     { var obj=field.GetValue(null); __state.Fields.Add(Tuple.Create(type,field.Name,obj,JsonConvert.SerializeObject(obj))); }
                     else if(!field.IsInitOnly&&!field.IsLiteral&&(field.FieldType.IsPrimitive||field.FieldType==typeof(string)))
                         __state.Scalars.Add(Tuple.Create(field,field.GetValue(null)));
+                    else if(!field.IsInitOnly&&typeof(IEnumerable).IsAssignableFrom(field.FieldType))
+                    {
+                        var obj=field.GetValue(null);
+                        __state.Collections.Add(Tuple.Create(field,obj==null?null:JsonConvert.DeserializeObject(JsonConvert.SerializeObject(obj),obj.GetType())));
+                    }
             foreach(var name in new[]{"_mergerPendingByTarget","_mergerCooldown","_walletBalance","_walletContributed","CashByStableId"})
             { var obj=Hooks.Get("MPServer",name); __state.Fields.Add(Tuple.Create("MPServer",name,obj,JsonConvert.SerializeObject(obj))); }
             MergerOutbox.Begin();
@@ -133,8 +139,13 @@ namespace BAMP.SyncFix
                 var dictionary=(IDictionary)item.Item3;
                 var restored=(IDictionary)JsonConvert.DeserializeObject(item.Item4,item.Item3.GetType());
                 dictionary.Clear();foreach(DictionaryEntry entry in restored)dictionary.Add(entry.Key,entry.Value);
+                // ApplyState replaces runtime dictionary objects; restoring only
+                // the retired object's contents leaves the live field unchanged.
+                var field=AccessTools.Field(Hooks.Type(item.Item1),item.Item2);
+                if(!field.IsInitOnly)field.SetValue(null,item.Item3);
             }
             foreach(var item in __state.Scalars)item.Item1.SetValue(null,item.Item2);
+            foreach(var item in __state.Collections)item.Item1.SetValue(null,item.Item2);
             __state.ManifestField.SetValue(null,__state.Manifest);
             if(ReferenceEquals(__state.Save,SaveGameManager.Current)&&__state.Save!=null)
             {__state.Save.Money=__state.Money;__state.Save.modData=__state.ModData;SaveGameManager.MarkChange();}

@@ -1,6 +1,22 @@
 using ILRepacking;
 using Mono.Cecil;
 
+if(args.Length==3&&args[0]=="contracts") {
+    using var target=AssemblyDefinition.ReadAssembly(args[1]);
+    IEnumerable<TypeDefinition> Types(IEnumerable<TypeDefinition> ts)=>ts.SelectMany(t=>new[]{t}.Concat(Types(t.NestedTypes)));
+    var all=Types(target.MainModule.Types).ToDictionary(t=>t.FullName);
+    int checkedRefs=0;
+    foreach(var file in Directory.GetFiles(args[2],"*.cs",SearchOption.TopDirectoryOnly))
+    foreach(System.Text.RegularExpressions.Match match in System.Text.RegularExpressions.Regex.Matches(File.ReadAllText(file),"Hooks\\.(Get|Set|Call|Method)\\(\\s*\"([^\"]+)\"\\s*,\\s*\"([^\"]+)\"")) {
+        var kind=match.Groups[1].Value;var typeName="BigAmbitionsMP."+match.Groups[2].Value;var member=match.Groups[3].Value;
+        if(!all.TryGetValue(typeName,out var type))throw new Exception("Missing reflection type: "+typeName);
+        bool found=kind=="Get"||kind=="Set"?type.Fields.Any(f=>f.Name==member):type.Methods.Any(m=>m.Name==member);
+        if(!found)throw new Exception("Missing reflection contract: "+Path.GetFileName(file)+" "+typeName+"."+member);
+        checkedRefs++;
+    }
+    Console.WriteLine("PASS: "+checkedRefs+" literal reflection member references match the actual DLL.");return;
+}
+
 if (args.Length >= 3 && args[0] == "inspect") {
     using var inspected = AssemblyDefinition.ReadAssembly(args[1]);
     IEnumerable<TypeDefinition> All(IEnumerable<TypeDefinition> ts) => ts.SelectMany(t => new[]{t}.Concat(All(t.NestedTypes)));
@@ -76,7 +92,7 @@ File.Move(output + ".verified.tmp", output, true);
 File.WriteAllText(Path.Combine(Path.GetDirectoryName(output)!,"verification.json"),System.Text.Json.JsonSerializer.Serialize(new {
     sha256=Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(output))),
     gameSha256=Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(Path.Combine(Path.GetFullPath(args[3]),"BigAmbitions.dll")))),
-    protocol=130,reviewedMethodEdits=permittedChanges.Count,originalMethodBodies=methods-permittedChanges.Count,ilBodiesChecked=auditMethods.Length
+    protocol=131,reviewedMethodEdits=permittedChanges.Count,originalMethodBodies=methods-permittedChanges.Count,ilBodiesChecked=auditMethods.Length
 }));
 File.WriteAllText(Path.Combine(Path.GetDirectoryName(output)!, "reviewed-method-edits.txt"),string.Join("\n",permittedChanges.Order()));
 Console.WriteLine("PASS: " + (methods-permittedChanges.Count) + " original method bodies unchanged; " + permittedChanges.Count + " reviewed edits; 7 host + 3 cart and sync patches merged; no helper DLL dependency.");

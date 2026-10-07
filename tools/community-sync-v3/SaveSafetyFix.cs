@@ -25,7 +25,7 @@ namespace BAMP.SyncFix
                 var compressed=(byte[])payload.GetType().GetMethod("GetHsgGzip").Invoke(payload,null);
                 using(var input=new MemoryStream(compressed))using(var gzip=new GZipStream(input,CompressionMode.Decompress))using(var output=new MemoryStream())
                 {SafetyCore.CopyBounded(gzip,output);Hooks.ValidateSave(payload,output.ToArray());}
-                var world=MPSaveCoordinator.ActivePlaythroughId??"";
+                var world=Wire.CurrentWorld;
                 var incoming=(string)payload.GetType().GetProperty("PlaythroughId")?.GetValue(payload);
                 if(world!=""&&!string.IsNullOrEmpty(incoming)&&incoming!=world)throw new InvalidDataException("Save belongs to another world.");
                 return true;

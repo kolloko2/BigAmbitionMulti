@@ -121,13 +121,19 @@ namespace BAMP.SyncFix
         private static bool Prefix(SharedWorkEditPayload p, out string __state)
         {
             __state=null;if(p==null)return true;
+            // A refusal is an answer for the sender's UI, not an edit of a
+            // registration on this machine. Native code handles it first.
+            if(p.Op=="mergerplanedit"&&p.PlanOp=="refused")return true;
             if(string.IsNullOrEmpty(p.AddressKey)||SaveGameManager.Current==null||Hooks.Call("GameStatePatcher","FindRegistration",p.AddressKey)==null)return false;
             Wire.Ensure(p);var stamp=Wire.Meta(p);
-            __state="work|"+stamp.Id;
-            if(Wire.Result(__state)!=null)return false;
-            if(!Wire.Fresh(p,"work|"+p.AddressKey+"|"+p.Op+"|"+p.StationId+"|"+p.SlotIndex))return false;
+            if(!Wire.InWorld(stamp))return false;
+            string key="work|"+stamp.Id;
+            if(Wire.Result(key)!=null)return false;
+            // These are independent commands (e.g. end two contracts), not
+            // replaceable snapshots. A later command cannot supersede an earlier ID.
+            __state=key;
             return true;
         }
-        private static void Postfix(string __state) {if(__state!=null&&Wire.Result(__state)==null)Wire.Remember(__state,"processed");}
+        private static void Postfix(string __state,bool __runOriginal) {if(__runOriginal&&__state!=null&&Wire.Result(__state)==null)Wire.Remember(__state,"processed");}
     }
 }

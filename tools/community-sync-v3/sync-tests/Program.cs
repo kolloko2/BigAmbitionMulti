@@ -165,6 +165,29 @@ MergerSync.Membership["friend"]="company";MPServer.Cash["friend"]=100;Check(Mone
 Wire.Assign(revoke,Wire.New());HubInputs.Offer(revoke);SaveGameManager.Current=new GameInstance{modData=new(SaveGameManager.Current.modData)};Wire.Reset();
 var crossOriginPending=JsonConvert.DeserializeObject<LoanOfferPayload>(oldIncoming);Wire.Assign(crossOriginPending,new WireStamp{Id="new-packet",Origin="other-origin",World="world",Epoch="new-connection",Sequence=1});Check(!HubInputs.Offer(crossOriginPending),"terminal offer cannot reopen through another origin or connection after reload");
 MPHub.IncomingOffers.Clear();MoneyTransport.ReturnPendingOffer(new LoanOfferPayload{Id="deferred",From="friend",To="host",Principal=100});Check(MPHub.IncomingOffers.Count==1&&MPHub.IncomingOffers[0].Id=="deferred","funds-deferred offer returns to inbox after AnswerOffer removed its row");
+byte[] Fragment(int id,int index,int count,params byte[] data){var f=new byte[12+data.Length];f[0]=2;f[1]=66;f[2]=70;f[3]=82;Buffer.BlockCopy(BitConverter.GetBytes(id),0,f,4,4);f[8]=(byte)index;f[9]=(byte)(index>>8);f[10]=(byte)count;f[11]=(byte)(count>>8);Buffer.BlockCopy(data,0,f,12,data.Length);return f;}
+var receiver=new object();byte[] full;
+Check(!FragmentReceiver.Accept(receiver,new byte[]{1,2,3},out full)&&full==null,"unfragmented handshake remains available to normal decoder");
+Check(FragmentReceiver.Accept(receiver,Fragment(1,1,2,3,4),out full)&&full==null,"first out-of-order fragment waits for remaining data");
+FragmentReceiver.Accept(receiver,Fragment(1,1,2,3,4),out full);
+Check(FragmentReceiver.Accept(receiver,Fragment(1,0,2,1,2),out full)&&full.SequenceEqual(new byte[]{1,2,3,4}),"fragment retry does not duplicate bytes and reverse order reassembles correctly");
+Check(FragmentReceiver.Accept(receiver,Fragment(2,0,0),out full)&&full==null,"zero fragment count is consumed without allocation");
+FragmentReceiver.Accept(receiver,Fragment(3,0,2,1),out full);
+Check(FragmentReceiver.Accept(receiver,Fragment(3,1,3,2),out full)&&full==null,"inconsistent fragment counts discard partial assembly");
+for(int i=0;i<32;i++)FragmentReceiver.Accept(receiver,Fragment(100+i,0,2,1),out full);
+Check(FragmentReceiver.Accept(receiver,Fragment(500,0,1,9),out full)&&full==null,"fragment assembly count is bounded");
+Check(FragmentReceiver.Accept(new object(),Fragment(500,0,1,9),out full)&&full.SequenceEqual(new byte[]{9}),"a full peer queue cannot block another peer handshake");
+MPServer.IsRunning=false;MPSaveCoordinator.ActivePlaythroughId="";MPSaveManager.ActivePlaythrough="world";Wire.Reset();
+var joinedMove=new PlayerPositionPayload{PlayerId="friend"};
+var joinedEnvelope=MessageEnvelope.Create(MessageType.PlayerMove,"friend",joinedMove);
+Check(Wire.Meta(joinedMove).World=="world","joined client stamps movement using the world identity received from host");
+MPServer.IsRunning=true;MPSaveCoordinator.ActivePlaythroughId="world";
+Check(Wire.Fresh(joinedEnvelope.GetPayload<PlayerPositionPayload>(),"player-route|friend"),"host accepts joined client movement before any client coordinated save");
+MPServer.IsRunning=false;MPSaveCoordinator.ActivePlaythroughId="old-host-world";
+Check(Wire.CurrentWorld=="world","client world identity ignores stale host coordinator state");
+var foreignMove=new PlayerPositionPayload{PlayerId="friend"};Wire.Assign(foreignMove,new WireStamp{Id="old",World="old-host-world",Origin="friend",Epoch="old",Sequence=1});
+Check(!Wire.Fresh(foreignMove,"player-route|friend"),"joined client still rejects movement from another world");
+MPServer.IsRunning=true;MPSaveCoordinator.ActivePlaythroughId="world";
 Console.WriteLine($"{passed} sync regression checks passed.");
 sealed class RepeatedStream(long remaining):Stream{
  public override int Read(byte[] b,int o,int c){int n=(int)Math.Min(c,remaining);remaining-=n;return n;}

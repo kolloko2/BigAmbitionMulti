@@ -122,7 +122,7 @@ static class SurgicalFixes
             var ins=m.Body.Instructions;
             for(int k=0;k<ins.Count;k++)if(ins[k].OpCode==OpCodes.Ldc_I4_S && Convert.ToInt32(ins[k].Operand)==27 &&
                 (Is(ins[k].Next,"HelloPayload::set_Protocol") || Is(ins[k].Previous,"HelloPayload::get_Protocol") || ins.Any(i=>i.OpCode==OpCodes.Ldstr && ((string)i.Operand).Contains("version mismatch")))) {
-                ins[k].OpCode=OpCodes.Ldc_I4;ins[k].Operand=130;Changed(m);protocols++;
+                ins[k].OpCode=OpCodes.Ldc_I4;ins[k].Operand=131;Changed(m);protocols++;
             }
         }
         if(protocols!=3)throw new Exception("Expected 3 protocol constants, got "+protocols);
@@ -213,7 +213,7 @@ static class SurgicalFixes
             foreach(var i in method.Body.Instructions)
                 if(i.OpCode.OperandType==OperandType.ShortInlineBrTarget)
                     i.OpCode=typeof(OpCodes).GetFields().Where(f=>f.FieldType==typeof(OpCode)).Select(f=>(OpCode)f.GetValue(null)!).Single(op=>op.Name==i.OpCode.Name.Replace(".s",""));
-        Console.WriteLine($"Surgical hooks: {writes} atomic writes, {copy} bounded decoders, protocol 130, cargo/stock/queue/wire guards; {changed.Count} reviewed method edits.");
+        Console.WriteLine($"Surgical hooks: {writes} atomic writes, {copy} bounded decoders, protocol 131, cargo/stock/queue/wire guards; {changed.Count} reviewed method edits.");
         return changed;
     }
 }

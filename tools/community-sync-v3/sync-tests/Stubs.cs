@@ -23,7 +23,7 @@ namespace BAMP.SyncFix {
  }
 }
 namespace BigAmbitionsMP {
- public enum MessageType{MoneyAdjust=1,MergerWalletDelta=2,CashSync=3,RentRequest=4,InteriorSnapshot=5,InteriorCargoSync=6,BuildingInteriorDelta=7,LoanOffer=8}
+ public enum MessageType{MoneyAdjust=1,MergerWalletDelta=2,CashSync=3,RentRequest=4,InteriorSnapshot=5,InteriorCargoSync=6,BuildingInteriorDelta=7,LoanOffer=8,PlayerMove=9}
  public class InteriorSnapshotPayload:Payload{public string AddressKey{get;set;}}
  public class InteriorCargoSyncPayload:Payload{public string AddressKey{get;set;}}
  public class InteriorEditDeltaPayload:Payload{public string AddressKey{get;set;}}
@@ -54,6 +54,7 @@ namespace BigAmbitionsMP {
  public class MPLink{}
  public static class GameStateReader {public static string AddressKey(string a)=>a;public static int Day=1;public static (int day,float hour) GetGameTime()=>(Day,0);}
  public static class MPConfig{public static string PlayerId="host";}
+ public static class MPSaveManager{public static string ActivePlaythrough="world";}
  public static class MPSaveCoordinator{public static string ActivePlaythroughId="world";public static int Persists;public static bool StoreManifest=true;public static Action Saving;public static void PersistGrantsNow(){Saving?.Invoke();if(StoreManifest)CheckedPersistence.ManifestStored();Persists++;}}
  public static class MergerSync{
   public static string MyGroupId="";public static Dictionary<string,string> Membership=new();

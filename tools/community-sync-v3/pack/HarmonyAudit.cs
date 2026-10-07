@@ -15,7 +15,16 @@ static class HarmonyAudit
             {
                 var type=attribute.ConstructorArguments.Select(a=>a.Value).OfType<TypeReference>().FirstOrDefault();
                 var name=attribute.ConstructorArguments.Select(a=>a.Value).OfType<string>().FirstOrDefault();
-                if(type!=null&&name!=null)targets.AddRange(type.Resolve().Methods.Where(m=>m.Name==name));
+                if(type!=null&&name!=null)
+                {
+                    var argumentTypes=attribute.ConstructorArguments
+                        .Where(a=>a.Type.FullName=="System.Type[]")
+                        .Select(a=>a.Value).OfType<CustomAttributeArgument[]>().FirstOrDefault();
+                    targets.AddRange(type.Resolve().Methods.Where(m=>m.Name==name
+                        &&(argumentTypes==null || (m.Parameters.Count==argumentTypes.Length
+                            && m.Parameters.Select(p=>p.ParameterType.FullName)
+                                .SequenceEqual(argumentTypes.Select(a=>((TypeReference)a.Value).FullName))))));
+                }
             }
             foreach(var method in All(new[]{patch}).SelectMany(t=>t.Methods).Where(m=>m.HasBody))
             {
